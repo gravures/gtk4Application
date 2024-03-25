@@ -1,0 +1,39 @@
+[project]
+name            = "gtk4app"
+description     = "A Gtk-4 Application example."
+authors         = [{ name = "Gilles Coissac", email = "gilles@ideographe.fr" }]
+license         = { file = "LICENCE" }
+readme          = "README.md"
+requires-python = ">=3.11"
+version         = "0.1.0"
+dependencies    = []
+
+[project.urls]
+homepage      = "https://github.com/gravures/gtk4Application"
+repository    = "https://github.com/gravures/gtk4Application"
+documentation = "https://gravures.github.io/gtk4Application/"
+tracker       = "https://github.com/gravures/gtk4Application/issues"
+download      = ""
+
+[tool.conda-lock]
+default-non-conda-source = "uv"
+skip-non-conda-lock      = false
+channels                 = ['conda-forge']
+platforms                = ['linux-64', 'osx-64', 'win-64', 'osx-arm64']
+
+[tool.conda-lock.dependencies]
+python    = "3.11"
+uv        = ">=0.1.24"
+meson     = ""
+gtk4      = "4.10.1"
+pygobject = ""
+
+##
+# Gnome Application
+# https://specifications.freedesktop.org/menu-spec/latest/apa.html
+# 
+[tool.gnome]
+bundle    = "io.github.gravures"
+appname   = "Gtk4App"
+humanname = "Gtk4 application example"
+category  = "Development"
