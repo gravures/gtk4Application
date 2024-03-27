@@ -13,18 +13,18 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: 8cedbc81510ddf57ae4767962a11eb9d608a34eb6e3002774ae7a191df3bbd96
-    osx-64: b5ceac1f684154593c2b83b46998e864f57237c40d2a7e4092566c5d032a97b0
-    win-64: f2cb82d87e6b54078f81e03ddcae5e488378bfc16be0a0e90d4d44de4f45fc5b
-    osx-arm64: 69180f73b3fe8bdf340157eeb46861915ed25f0ab3af9c0f5a3bd9cd967df9c5
+    linux-64: e3c3e4be37175a330cf98bcf5f96fa7559293c28e2a9b0e488dc05aa0155298f
+    osx-64: 5dad03d57c1cc4131373e0be3ab6035ef1df9790c7f0c9fc07b88ab013327c5b
+    win-64: e60c407699fa813db6d3f8e41f6d08831a431256b7cdbe7ace2512d3dfff2956
+    osx-arm64: 68c688f7c62deda744e36a82b06c2527bfe1a40c6caf54d065d9ed7d8e096c7e
   channels:
   - url: conda-forge
     used_env_vars: []
   platforms:
   - linux-64
   - osx-64
-  - win-64
   - osx-arm64
+  - win-64
   sources:
   - pyproject.toml
 package:
@@ -930,12 +930,12 @@ package:
   manager: conda
   platform: linux-64
   dependencies:
-    libgcc-ng: '>=7.5.0'
-    libstdcxx-ng: '>=7.5.0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/graphite2-1.3.13-h58526e2_1001.tar.bz2
+    libgcc-ng: '>=12'
+    libstdcxx-ng: '>=12'
+  url: https://conda.anaconda.org/conda-forge/linux-64/graphite2-1.3.13-h59595ed_1002.conda
   hash:
-    md5: 8c54672728e8ec6aa6db90cf2806d220
-    sha256: 65da967f3101b737b08222de6a6a14e20e480e7d523a5d1e19ace7b960b5d6b1
+    md5: 3ca330ce74f16d685d62e4553d36410f
+    sha256: 16be0b4b783501dbadb8abc1fce16202586840a295f992b07667796d55c313f3
   category: main
   optional: false
 - name: graphite2
@@ -943,11 +943,11 @@ package:
   manager: conda
   platform: osx-64
   dependencies:
-    libcxx: '>=10.0.1'
-  url: https://conda.anaconda.org/conda-forge/osx-64/graphite2-1.3.13-h2e338ed_1001.tar.bz2
+    libcxx: '>=16'
+  url: https://conda.anaconda.org/conda-forge/osx-64/graphite2-1.3.13-h73e2aa4_1002.conda
   hash:
-    md5: 5f6e7f98caddd0fc2d345b207531814c
-    sha256: 1dba68533e6888c5e2a7e37119a77d6f388fb82721c530ba3bd28d541828e59b
+    md5: 958d3a1affeeeabc6140a070d6605c9b
+    sha256: cb9dbd25fc93c9d7b4abf374ef4e50368cd5e91fb2731d05118ce40c97ee2768
   category: main
   optional: false
 - name: graphite2
@@ -955,23 +955,22 @@ package:
   manager: conda
   platform: osx-arm64
   dependencies:
-    libcxx: '>=11.0.0'
-  url: https://conda.anaconda.org/conda-forge/osx-arm64/graphite2-1.3.13-h9f76cd9_1001.tar.bz2
+    libcxx: '>=16'
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/graphite2-1.3.13-hebf3989_1002.conda
   hash:
-    md5: 288b591645cb9cb9c0af7309ac1114f5
-    sha256: 57db1e563cdfe469cd453a2988039118e96ce4b77c9219e2f1022be0e1c2b03f
+    md5: 619cd8cab84a7c65a1278c179c008a7a
+    sha256: 1436cdb4441501dabf761b52b367918d562f1dade2e832c83dc6d2b4d9457430
   category: main
   optional: false
 - name: graphite2
   version: 1.3.13
   manager: conda
   platform: win-64
-  dependencies:
-    vc: 14.*
-  url: https://conda.anaconda.org/conda-forge/win-64/graphite2-1.3.13-1000.tar.bz2
+  dependencies: {}
+  url: https://conda.anaconda.org/conda-forge/win-64/graphite2-1.3.13-h57928b3_1002.conda
   hash:
-    md5: 8fc0e04e5c852cadf2cad68b86a906ab
-    sha256: ed47008df8e57a83f45112985b76ac4339177486bd4d1d1b305d685a832532aa
+    md5: d7f0a9edb030f8a341b6e1c303324cb6
+    sha256: 6ed063fd3c5cdaed21eb3ee50336d94fd5a175a34ac57cd1df4bb79328bd07df
   category: main
   optional: false
 - name: gtk4
@@ -2956,6 +2955,54 @@ package:
   hash:
     md5: fc048363eb8f03cd1737600a5d08aafe
     sha256: 2c4e914f521ccb2718946645108c9bd3fc3216ba69aea20c2c3cedbd8db32bb1
+  category: main
+  optional: false
+- name: tomli
+  version: 2.0.1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+  hash:
+    md5: 5844808ffab9ebdb694585b50ba02a96
+    sha256: 4cd48aba7cd026d17e86886af48d0d2ebc67ed36f87f6534f4b67138f5a5a58f
+  category: main
+  optional: false
+- name: tomli
+  version: 2.0.1
+  manager: conda
+  platform: osx-64
+  dependencies:
+    python: '>=3.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+  hash:
+    md5: 5844808ffab9ebdb694585b50ba02a96
+    sha256: 4cd48aba7cd026d17e86886af48d0d2ebc67ed36f87f6534f4b67138f5a5a58f
+  category: main
+  optional: false
+- name: tomli
+  version: 2.0.1
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    python: '>=3.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+  hash:
+    md5: 5844808ffab9ebdb694585b50ba02a96
+    sha256: 4cd48aba7cd026d17e86886af48d0d2ebc67ed36f87f6534f4b67138f5a5a58f
+  category: main
+  optional: false
+- name: tomli
+  version: 2.0.1
+  manager: conda
+  platform: win-64
+  dependencies:
+    python: '>=3.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2
+  hash:
+    md5: 5844808ffab9ebdb694585b50ba02a96
+    sha256: 4cd48aba7cd026d17e86886af48d0d2ebc67ed36f87f6534f4b67138f5a5a58f
   category: main
   optional: false
 - name: tzdata
