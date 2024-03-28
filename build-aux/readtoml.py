@@ -26,7 +26,8 @@ def read(file: Path, path: str) -> Any | None:
 
 
 def exit_with_error(message) -> NoReturn:
-    print(f"readtoml.py: {message}", sys.stderr)
+    me = Path(__file__).name
+    print(f"{me}: {message}", file=sys.stderr)
     sys.exit(1)
 
 
