@@ -1,15 +1,23 @@
 # ./data/icons/meson.build: Applications Icons Build Targets
 
-application_id = 'io.github.gravures.acide'
+build_icons = find_program(files('build-aux/buildicons.py'), required: true)
 
-scalable_dir = join_paths('hicolor', 'scalable', 'apps')
-install_data(
-  join_paths(scalable_dir, ('@0@.svg').format(application_id)),
-  install_dir: join_paths(get_option('datadir'), 'icons', scalable_dir)
+icons_dir = custom_target(
+  'icons',
+  command: [build_icons, '@INPUT@', appid, '@OUTPUT@'],
+  input: 'template.svg',
+  output: ['icons'],
+  build_by_default: true,
+  install: false,
 )
 
-symbolic_dir = join_paths('hicolor', 'symbolic', 'apps')
-install_data(
-  join_paths(symbolic_dir, ('@0@-symbolic.svg').format(application_id)),
-  install_dir: join_paths(get_option('datadir'), 'icons', symbolic_dir)
+if host_machine.system() == 'linux'
+  install_icons_dir = join_paths(get_option('datadir'), 'icons')
+endif
+
+install_subdir(
+  icons_dir.full_path(),
+  strip_directory: true,
+  install_dir: install_icons_dir,
+  install_tag: 'resources',
 )
