@@ -1,12 +1,26 @@
 #!/usr/bin/env python3
+# Copyright 2024 Gilles Coissac
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import annotations
 
-import os
+import argparse
 import shutil
 import subprocess
 import sys
 import tempfile
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import ClassVar, NoReturn, Self
 
@@ -18,21 +32,21 @@ from PIL import Image
 # TODO: Handles different image formats for template
 
 
-class IconGenerator(ABC):
+class IconGenerator:
     sizes: ClassVar[tuple[int, ...]] = ()
     formats: ClassVar[tuple[str, ...]] = ("png", "svg")
 
     def __new__(cls, template: Path, app_name: str, subdir: Path) -> Self:
         if cls is IconGenerator:
             if sys.platform == "darwin":
-                cls = Osx
+                cls = OsxIconGenerator
             elif "win" in sys.platform:
-                cls = Windows
+                cls = WindowsIconGenerator
             elif sys.platform.startswith("linux"):
-                cls = Linux
+                cls = LinuxIconGenerator
             else:
                 raise RuntimeError("Unsupported platform")
-        return object.__new__(cls)
+        return object.__new__(cls)  # type: ignore
 
     def __init__(self, template: Path, app_name: str, subdir: Path) -> None:
         if not template.is_file():
@@ -70,19 +84,19 @@ class IconGenerator(ABC):
 
         self.pack(self.package)
 
-    @abstractmethod
-    def pack(self, package: Path) -> None: ...
+    def pack(self, package: Path) -> None:
+        return None
 
-    @abstractmethod
-    def save_icon(self, name: str, size: int, img: Image.Image) -> None: ...
+    def save_icon(self, name: str, size: int, img: Image.Image) -> None:
+        return None
 
 
-class Osx(IconGenerator):
+class OsxIconGenerator(IconGenerator):
     sizes: ClassVar[tuple[int, ...]] = (16, 32, 64, 128, 256, 512, 1024)
 
     def __init__(self, template: Path, app_name: str, subdir: Path) -> None:
         super().__init__(template, app_name, subdir)
-        self.package = self.subdir / f"{self.name}.iconset"
+        self.package = self.subdir / f"{self.app_name}.iconset"
         self.ensure_path(self.package)
 
     def save_icon(self, name: str, size: int, img: Image.Image) -> None:
@@ -97,14 +111,14 @@ class Osx(IconGenerator):
                 "icns",
                 str(package),
                 "-o",
-                str(self.subdir / f"{self.name}.icns"),
+                str(self.subdir / f"{self.app_name}.icns"),
             ]
-            subprocess.run(args, shell=False, check=True, capture_output=True)
+            subprocess.run(args, shell=False, check=True, capture_output=True)  # noqa: S603
         else:
             raise OSError("iconutil program not found")
 
 
-class Linux(IconGenerator):
+class LinuxIconGenerator(IconGenerator):
     sizes: ClassVar[tuple[int, ...]] = (16, 22, 24, 32, 36, 48, 64, 72, 96, 128, 192, 256, 512)
 
     def __init__(self, template: Path, app_name: str, subdir: Path) -> None:
@@ -116,11 +130,11 @@ class Linux(IconGenerator):
         self.ensure_path(filepath.parent)
         img.save(filepath, bitmap_format="png")
 
-    def pack(self) -> None:
+    def pack(self, package: Path) -> None:
         return None
 
 
-class Windows(IconGenerator):
+class WindowsIconGenerator(IconGenerator):
     sizes: ClassVar[tuple[int, ...]] = (16, 32, 48, 256)
 
     def save_icon(self, name: str, size: int, img: Image.Image) -> None:
@@ -133,27 +147,31 @@ def exit_with_error(message) -> NoReturn:
     sys.exit(1)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog=Path(__file__).stem,
+        description="Generate application icons from an icon template file (svg or bitmap)",
+    )
+    parser.add_argument("template", help="icon template input file")
+    parser.add_argument("appname", help="application name")
+    parser.add_argument("subdir", help="output directory")
+
+    return parser.parse_args()
+
+
 def main():
-    src_root = os.environ.get("MESON_SOURCE_ROOT")
-    build_root = os.environ.get("MESON_BUILD_ROOT")
-    subdir = os.environ.get("MESON_SUBDIR")
-
-    if not all((src_root, build_root, subdir)):
-        exit_with_error("must be run from within a meson build script")
-
-    if len(sys.argv) > 1:
-        template = Path(sys.argv[1])
-        app_name = sys.argv[2]
-        subdir = Path(sys.argv[3])
-        try:
-            gen = IconGenerator(template, app_name=app_name, output=subdir)
-            gen.generate()
-        except Exception as e:
-            exit_with_error(f"error generating icons: {e}")
+    args = parse_args()
+    try:
+        gen = IconGenerator(
+            Path(args.template),
+            app_name=args.appname,
+            subdir=Path(args.subdir),
+        )
+        gen.generate()
+    except Exception as e:
+        exit_with_error(f"error generating icons: {e}")
     else:
-        exit_with_error("must specify a file as argument")
-
-    sys.exit(0)
+        sys.exit(0)
 
 
 if __name__ == "__main__":
