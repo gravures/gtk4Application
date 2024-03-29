@@ -2,20 +2,37 @@
 from __future__ import annotations
 
 import os
+import shutil
+import subprocess
 import sys
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from re import sub
-from typing import ClassVar, NoReturn
+from typing import ClassVar, NoReturn, Self
 
 from cairosvg import svg2png
 from PIL import Image
 
 
+# TODO: Handles double template small / large
+# TODO: Handles different image formats for template
+
+
 class IconGenerator(ABC):
     sizes: ClassVar[tuple[int, ...]] = ()
     formats: ClassVar[tuple[str, ...]] = ("png", "svg")
+
+    def __new__(cls, template: Path, app_name: str, subdir: Path) -> Self:
+        if cls is IconGenerator:
+            if sys.platform == "darwin":
+                cls = Osx
+            elif "win" in sys.platform:
+                cls = Windows
+            elif sys.platform.startswith("linux"):
+                cls = Linux
+            else:
+                raise RuntimeError("Unsupported platform")
+        return object.__new__(cls)
 
     def __init__(self, template: Path, app_name: str, subdir: Path) -> None:
         if not template.is_file():
@@ -26,7 +43,11 @@ class IconGenerator(ABC):
 
         self.template: Path = template
         self.subdir: Path = subdir
-        self.app_name = app_name
+        self.package: Path = subdir
+        self.app_name: str = app_name
+
+    def ensure_path(self, path: Path) -> None:
+        path.mkdir(parents=True, exist_ok=True)
 
     def generate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -47,6 +68,11 @@ class IconGenerator(ABC):
                 img_rsz = img.resize(size=(size, size), resample=Image.LANCZOS)
                 self.save_icon(self.app_name, size, img_rsz)
 
+        self.pack(self.package)
+
+    @abstractmethod
+    def pack(self, package: Path) -> None: ...
+
     @abstractmethod
     def save_icon(self, name: str, size: int, img: Image.Image) -> None: ...
 
@@ -54,13 +80,44 @@ class IconGenerator(ABC):
 class Osx(IconGenerator):
     sizes: ClassVar[tuple[int, ...]] = (16, 32, 64, 128, 256, 512, 1024)
 
+    def __init__(self, template: Path, app_name: str, subdir: Path) -> None:
+        super().__init__(template, app_name, subdir)
+        self.package = self.subdir / f"{self.name}.iconset"
+        self.ensure_path(self.package)
+
+    def save_icon(self, name: str, size: int, img: Image.Image) -> None:
+        img.save(self.package / f"icon_{size}x{size}.png", bitmap_format="png")
+        img.save(self.package / f"icon_{size // 2}x{size // 2}@2x.png", bitmap_format="png")
+
+    def pack(self, package: Path) -> None:
+        if iconutil := shutil.which("iconutil"):
+            args = [
+                iconutil,
+                "-c",
+                "icns",
+                str(package),
+                "-o",
+                str(self.subdir / f"{self.name}.icns"),
+            ]
+            subprocess.run(args, shell=False, check=True, capture_output=True)
+        else:
+            raise OSError("iconutil program not found")
+
 
 class Linux(IconGenerator):
     sizes: ClassVar[tuple[int, ...]] = (16, 22, 24, 32, 36, 48, 64, 72, 96, 128, 192, 256, 512)
 
+    def __init__(self, template: Path, app_name: str, subdir: Path) -> None:
+        super().__init__(template, app_name, subdir)
+        self.package = self.subdir / "hicolor"
+
     def save_icon(self, name: str, size: int, img: Image.Image) -> None:
-        filepath = self.subdir / "hicolor" / f"{size}x{size}" / "apps" / f"{name}.png"
+        filepath = self.package / f"{size}x{size}" / "apps" / f"{name}.png"
+        self.ensure_path(filepath.parent)
         img.save(filepath, bitmap_format="png")
+
+    def pack(self) -> None:
+        return None
 
 
 class Windows(IconGenerator):
@@ -68,16 +125,6 @@ class Windows(IconGenerator):
 
     def save_icon(self, name: str, size: int, img: Image.Image) -> None:
         return NotImplemented
-
-
-def icon_generator_factory(template: Path, output: Path) -> IconGenerator:
-    if sys.platform == "linux":
-        return Linux(template, output)
-    if sys.platform == "darwin":
-        return Osx(template, output)
-    if sys.platform == "win32":
-        return Windows(template, output)
-    raise RuntimeError("Unsupported platform")
 
 
 def exit_with_error(message) -> NoReturn:
@@ -99,7 +146,7 @@ def main():
         app_name = sys.argv[2]
         subdir = Path(sys.argv[3])
         try:
-            gen = icon_generator_factory(template, app_name=app_name, output=subdir)
+            gen = IconGenerator(template, app_name=app_name, output=subdir)
             gen.generate()
         except Exception as e:
             exit_with_error(f"error generating icons: {e}")
